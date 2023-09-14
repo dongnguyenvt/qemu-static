@@ -7,12 +7,14 @@ WORKDIR /build
 RUN apk add --no-cache python3 py3-pip gcc make samurai perl libc-dev pkgconf \
        linux-headers glib-dev glib-static zlib-dev zlib-static bash curl \
        git patch pixman-dev pixman-static bzip2-static ncurses-static && \
-    pip install ninja sphinx>=1.6.0 sphinx-rtd-theme>=0.5.0 && \
-    curl -L https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz | tar -xz && \
+    pip install ninja sphinx>=1.6.0 sphinx-rtd-theme>=0.5.0
+
+RUN curl -L https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz | tar xfJ - && \
     cd qemu-${QEMU_VERSION} && \
-    ./configure --prefix=/usr/local --static --cpu=x86_64 --target-list=x86_64-linux-user && \
+    ./configure --prefix=/usr/local --static --cpu=x86_64 --target-list=x86_64-softmmu && \
     make -j$(grep -c processor /proc/cpuinfo) && \
-    make install
+    make install && \
+    strip -s /usr/local/bin/qemu*
 
 FROM alpine:3.18 as deploy
 
